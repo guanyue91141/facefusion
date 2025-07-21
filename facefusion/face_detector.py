@@ -79,8 +79,9 @@ def create_static_model_set(download_scope : DownloadScope) -> ModelSet:
 
 def get_inference_pool() -> InferencePool:
 	model_names = [ state_manager.get_item('face_detector_model') ]
+	print("当前face_detector_model:", model_names)
 	_, model_source_set = collect_model_downloads()
-
+	print("model_source_set keys:", model_source_set.keys())
 	return inference_manager.get_inference_pool(__name__, model_names, model_source_set)
 
 
@@ -296,15 +297,15 @@ def forward_with_scrfd(detect_vision_frame : VisionFrame) -> Detection:
 
 
 def forward_with_yolo_face(detect_vision_frame : VisionFrame) -> Detection:
-	face_detector = get_inference_pool().get('yolo_face')
-
-	with thread_semaphore():
-		detection = face_detector.run(None,
-		{
-			'input': detect_vision_frame
-		})
-
-	return detection
+    pool = get_inference_pool()
+    print("inference pool keys:", pool.keys())
+    face_detector = pool.get('yolo_face')
+    print("face_detector:", face_detector)
+    if face_detector is None:
+        raise RuntimeError("YOLO Face 模型未正确加载，请检查 yoloface_8n.onnx 是否存在且未损坏。")
+    with thread_semaphore():
+        detection = face_detector.run(None, {'input': detect_vision_frame})
+    return detection
 
 
 def prepare_detect_frame(temp_vision_frame : VisionFrame, face_detector_size : str) -> VisionFrame:

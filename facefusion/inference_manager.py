@@ -40,6 +40,7 @@ def create_inference_pool(model_source_set : DownloadSet, execution_device_id : 
 
 	for model_name in model_source_set.keys():
 		model_path = model_source_set.get(model_name).get('path')
+		print(f"尝试加载模型: {model_name}, 路径: {model_path}, 文件存在: {is_file(model_path)}")
 		if is_file(model_path):
 			inference_pool[model_name] = create_inference_session(model_path, execution_device_id, execution_providers)
 
